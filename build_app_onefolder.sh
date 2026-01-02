@@ -30,6 +30,13 @@ fi
 echo "🧹 Limpando builds anteriores..."
 rm -rf build dist *.spec
 
+# Verifica se Info.plist existe
+INFO_PLIST_OPTION=""
+if [ -f "Info.plist" ]; then
+    INFO_PLIST_OPTION="--osx-bundle-identifier=com.bbb.dvrviewer"
+    echo "✅ Usando Info.plist personalizado"
+fi
+
 # Cria o .app (one-folder - mais fácil de debugar)
 echo "📦 Criando aplicação..."
 pyinstaller \
@@ -38,6 +45,7 @@ pyinstaller \
     --onedir \
     --noconsole \
     $ICON_OPTION \
+    $INFO_PLIST_OPTION \
     --add-data "config.json:." \
     --add-data "imagens:imagens" \
     --hidden-import=PIL._tkinter_finder \
@@ -45,6 +53,12 @@ pyinstaller \
     --hidden-import=cv2 \
     --collect-all cv2 \
     main.py
+
+# Copia Info.plist para o bundle se existir
+if [ -f "Info.plist" ]; then
+    echo "📋 Copiando Info.plist para o bundle..."
+    cp Info.plist "dist/BBB DVR Viewer.app/Contents/Info.plist"
+fi
 
 if [ $? -eq 0 ]; then
     echo ""

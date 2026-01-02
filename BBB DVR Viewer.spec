@@ -54,5 +54,5 @@ app = BUNDLE(
     coll,
     name='BBB DVR Viewer.app',
     icon='imagens/logo.png',
-    bundle_identifier=None,
+    bundle_identifier='com.bbb.dvrviewer',
 )

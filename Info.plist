@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>CFBundleName</key>
+    <string>BBB DVR Viewer</string>
+    <key>CFBundleIdentifier</key>
+    <string>com.bbb.dvrviewer</string>
+    <key>CFBundleVersion</key>
+    <string>1.0</string>
+    <key>CFBundleShortVersionString</key>
+    <string>1.0</string>
+    <key>NSAppTransportSecurity</key>
+    <dict>
+        <key>NSAllowsArbitraryLoads</key>
+        <true/>
+        <key>NSAllowsLocalNetworking</key>
+        <true/>
+    </dict>
+    <key>NSNetworkVolumesUsageDescription</key>
+    <string>Este aplicativo precisa acessar a rede local para conectar às câmeras RTSP dos DVRs.</string>
+    <key>NSLocalNetworkUsageDescription</key>
+    <string>Este aplicativo precisa acessar a rede local para conectar às câmeras RTSP dos DVRs.</string>
+    <key>LSMinimumSystemVersion</key>
+    <string>10.13</string>
+</dict>
+</plist>
+
