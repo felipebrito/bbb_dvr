@@ -36,6 +36,13 @@ class CameraViewerApp:
         self.canvas = tk.Canvas(self.root, bg='black', highlightthickness=0)
         self.canvas.pack(fill=tk.BOTH, expand=True)
         
+        # Tela de loading
+        self.loading_canvas = None
+        self.loading_text_id = None
+        self.loading_progress_id = None
+        self.loading_animation_id = None
+        self._show_loading_screen()
+        
         # Barra de progresso (2px de altura na parte inferior)
         self.progress_bar_id = None
         
@@ -62,32 +69,146 @@ class CameraViewerApp:
         self.last_frame_time = 0
         self.target_fps = 25
         self.frame_interval = 1.0 / self.target_fps
+        self.wait_for_all_frames = True
         
+        # Inicia carregamento assíncrono
+        self.root.after(100, self._start_loading)
+    
+    def _show_loading_screen(self):
+        """Mostra tela de loading."""
+        self.loading_canvas = tk.Canvas(self.root, bg='black', highlightthickness=0)
+        self.loading_canvas.pack(fill=tk.BOTH, expand=True)
+        
+        # Texto de loading
+        canvas_width = self.root.winfo_screenwidth()
+        canvas_height = self.root.winfo_screenheight()
+        
+        self.loading_canvas.create_text(
+            canvas_width // 2, 
+            canvas_height // 2 - 50,
+            text="Conectando às câmeras...",
+            fill='white',
+            font=('Arial', 24, 'bold'),
+            tags='loading_text'
+        )
+        
+        # Barra de progresso animada
+        self.loading_progress_id = self.loading_canvas.create_rectangle(
+            canvas_width // 2 - 200,
+            canvas_height // 2 + 20,
+            canvas_width // 2 - 200,
+            canvas_height // 2 + 30,
+            fill='white',
+            outline='',
+            tags='loading_progress'
+        )
+        
+        # Anima a barra de progresso
+        self._animate_loading()
+    
+    def _animate_loading(self):
+        """Anima a barra de loading."""
+        if self.loading_canvas is None:
+            return
+        
+        canvas_width = self.root.winfo_screenwidth()
+        canvas_height = self.root.winfo_screenheight()
+        
+        # Calcula progresso baseado no tempo (animação visual)
+        elapsed = time.time() % 2.0  # Ciclo de 2 segundos
+        progress = (elapsed / 2.0) * 400  # 400px de largura
+        
+        x1 = canvas_width // 2 - 200
+        x2 = canvas_width // 2 - 200 + progress
+        
+        self.loading_canvas.coords(
+            self.loading_progress_id,
+            x1, canvas_height // 2 + 20,
+            x2, canvas_height // 2 + 30
+        )
+        
+        # Continua animando enquanto estiver carregando
+        if self.loading_canvas:
+            self.root.after(50, self._animate_loading)
+    
+    def _update_loading_text(self, text: str, progress: float = None):
+        """Atualiza texto de loading e progresso."""
+        if self.loading_canvas is None:
+            return
+        
+        canvas_width = self.root.winfo_screenwidth()
+        canvas_height = self.root.winfo_screenheight()
+        
+        # Atualiza texto
+        self.loading_canvas.delete('loading_text')
+        self.loading_canvas.create_text(
+            canvas_width // 2,
+            canvas_height // 2 - 50,
+            text=text,
+            fill='white',
+            font=('Arial', 24, 'bold'),
+            tags='loading_text'
+        )
+        
+        # Atualiza barra de progresso se fornecido
+        if progress is not None:
+            x1 = canvas_width // 2 - 200
+            x2 = canvas_width // 2 - 200 + (progress * 400)
+            self.loading_canvas.coords(
+                self.loading_progress_id,
+                x1, canvas_height // 2 + 20,
+                x2, canvas_height // 2 + 30
+            )
+    
+    def _start_loading(self):
+        """Inicia carregamento dos streams de forma assíncrona."""
         # Inicia streams
         self.stream_manager.start_all()
         
-        # Aguarda todos os streams conectarem antes de exibir
-        print("Aguardando conexão de todos os streams...")
-        max_wait = 30  # Máximo 30 segundos
-        start_time = time.time()
-        while time.time() - start_time < max_wait:
-            all_ready = True
-            for i in range(self.stream_manager.get_stream_count()):
-                if not self.stream_manager.streams[i].is_connected():
-                    all_ready = False
-                    break
-            if all_ready:
-                print("Todos os streams conectados!")
-                break
-            time.sleep(0.5)
+        # Inicia verificação de conexão
+        self._check_connections()
+    
+    def _check_connections(self):
+        """Verifica conexões de forma assíncrona."""
+        total_streams = self.stream_manager.get_stream_count()
+        connected_count = sum(1 for i in range(total_streams) 
+                            if self.stream_manager.streams[i].is_connected())
+        
+        progress = connected_count / total_streams if total_streams > 0 else 0
+        
+        # Atualiza texto de loading
+        self._update_loading_text(
+            f"Conectando às câmeras... {connected_count}/{total_streams}",
+            progress
+        )
+        
+        # Verifica se todos estão conectados
+        if connected_count == total_streams and total_streams > 0:
+            # Todos conectados, finaliza loading
+            self.root.after(500, self._finish_loading)  # Aguarda 0.5s para estabilizar
+        else:
+            # Continua verificando
+            self.root.after(500, self._check_connections)
+    
+    def _finish_loading(self):
+        """Finaliza carregamento e inicia exibição."""
+        # Remove tela de loading
+        if self.loading_canvas:
+            self.loading_canvas.destroy()
+            self.loading_canvas = None
         
         # Inicializa display manager
         self.display_manager.reset(self.config_manager)
-        self.wait_for_all_frames = True  # Inicialmente espera por todos os frames
         
         # Garante que o timer do grid atual está inicializado para modo automático
         if self.auto_mode:
             self.display_manager.current_grid_start_time = time.time()
+        
+        # Inicia loop de exibição
+        self.running = True
+        self._update_display()
+        
+        print("Aplicação pronta!")
     
     def _open_config(self, event=None):
         """Abre janela de configuração."""
