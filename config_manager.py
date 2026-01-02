@@ -12,19 +12,33 @@ class ConfigManager:
         # Quando empacotado, o config.json está no diretório do executável
         if getattr(sys, 'frozen', False):
             # Se está rodando como executável empacotado
-            # PyInstaller coloca arquivos de dados no diretório do executável
+            # PyInstaller coloca arquivos de dados no diretório do executável (Contents/MacOS/)
             exec_dir = os.path.dirname(sys.executable)
-            alt_path = os.path.join(exec_dir, config_path)
             
-            if os.path.exists(alt_path):
-                config_path = alt_path
-                print(f"ConfigManager: Encontrado config.json no diretório do executável: {alt_path}")
-            else:
-                # Tenta no diretório atual de trabalho
-                if os.path.exists(config_path):
-                    print(f"ConfigManager: Encontrado config.json no diretório atual: {config_path}")
-                else:
-                    print(f"ConfigManager: AVISO - config.json não encontrado em {alt_path} nem em {config_path}")
+            # Tenta várias localizações possíveis
+            possible_paths = [
+                os.path.join(exec_dir, config_path),  # Contents/MacOS/config.json
+                config_path,  # Diretório atual de trabalho
+            ]
+            
+            # Se executável está dentro de .app, também tenta Resources
+            if '.app' in sys.executable:
+                app_bundle = sys.executable.split('.app')[0] + '.app'
+                resources_path = os.path.join(app_bundle, 'Contents', 'Resources', config_path)
+                possible_paths.insert(1, resources_path)
+            
+            found = False
+            for alt_path in possible_paths:
+                if os.path.exists(alt_path):
+                    config_path = alt_path
+                    print(f"ConfigManager: Encontrado config.json em: {alt_path}")
+                    found = True
+                    break
+            
+            if not found:
+                print(f"ConfigManager: AVISO - config.json não encontrado. Tentou:")
+                for p in possible_paths:
+                    print(f"  - {p}")
         else:
             # Se está rodando como script Python
             if not os.path.exists(config_path):
