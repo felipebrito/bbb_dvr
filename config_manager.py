@@ -15,17 +15,30 @@ class ConfigManager:
             # PyInstaller coloca arquivos de dados no diretório do executável (Contents/MacOS/)
             exec_dir = os.path.dirname(sys.executable)
             
-            # Tenta várias localizações possíveis
-            possible_paths = [
-                os.path.join(exec_dir, config_path),  # Contents/MacOS/config.json
-                config_path,  # Diretório atual de trabalho
-            ]
+            # Tenta várias localizações possíveis (ordem de prioridade)
+            possible_paths = []
             
-            # Se executável está dentro de .app, também tenta Resources
+            # Se executável está dentro de .app, tenta Resources primeiro (onde PyInstaller coloca)
             if '.app' in sys.executable:
-                app_bundle = sys.executable.split('.app')[0] + '.app'
-                resources_path = os.path.join(app_bundle, 'Contents', 'Resources', config_path)
-                possible_paths.insert(1, resources_path)
+                # Encontra o caminho do .app
+                app_path = sys.executable
+                while not app_path.endswith('.app') and app_path != '/':
+                    app_path = os.path.dirname(app_path)
+                
+                if app_path.endswith('.app'):
+                    # 1. Contents/Resources/config.json (onde PyInstaller coloca dados)
+                    resources_path = os.path.join(app_path, 'Contents', 'Resources', config_path)
+                    possible_paths.append(resources_path)
+                    
+                    # 2. Contents/MacOS/config.json (alternativa)
+                    macos_path = os.path.join(app_path, 'Contents', 'MacOS', config_path)
+                    possible_paths.append(macos_path)
+            
+            # 3. Diretório do executável
+            possible_paths.append(os.path.join(exec_dir, config_path))
+            
+            # 4. Diretório atual de trabalho
+            possible_paths.append(config_path)
             
             found = False
             for alt_path in possible_paths:
