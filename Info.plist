@@ -23,8 +23,6 @@
     <string>Este aplicativo precisa acessar a rede local para conectar às câmeras RTSP dos DVRs.</string>
     <key>LSMinimumSystemVersion</key>
     <string>10.13</string>
-    <key>CFBundleIconFile</key>
-    <string>generated-5ef1a3f2cf49922e79a05c8ce28f17a161dfe359fe03a723bf39c9861ecd622d</string>
 </dict>
 </plist>
 

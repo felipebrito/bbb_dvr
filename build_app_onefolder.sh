@@ -64,10 +64,28 @@ if [ -f "Info.plist" ]; then
     if [ -n "$ICNS_FILE" ]; then
         ICNS_NAME=$(basename "$ICNS_FILE" .icns)
         echo "📋 Atualizando referência do ícone para: $ICNS_NAME"
-        # Usa sed para atualizar o CFBundleIconFile no Info.plist
-        sed -i '' "s/<key>CFBundleIconFile<\/key>.*/<key>CFBundleIconFile<\/key>\n    <string>$ICNS_NAME<\/string>/" "dist/BBB DVR Viewer.app/Contents/Info.plist" 2>/dev/null || \
-        sed -i '' "/<key>CFBundleIconFile<\/key>/!b;n;c\\
-    <string>$ICNS_NAME</string>" "dist/BBB DVR Viewer.app/Contents/Info.plist"
+        # Adiciona CFBundleIconFile antes do fechamento do dict
+        python3 << EOF
+import plistlib
+import sys
+
+plist_path = "dist/BBB DVR Viewer.app/Contents/Info.plist"
+icns_name = "$ICNS_NAME"
+
+try:
+    with open(plist_path, 'rb') as f:
+        plist = plistlib.load(f)
+    
+    plist['CFBundleIconFile'] = icns_name
+    
+    with open(plist_path, 'wb') as f:
+        plistlib.dump(plist, f)
+    
+    print(f"✅ Ícone configurado: {icns_name}")
+except Exception as e:
+    print(f"⚠️  Erro ao atualizar Info.plist: {e}")
+    sys.exit(0)  # Não falha o build
+EOF
     fi
 fi
 
