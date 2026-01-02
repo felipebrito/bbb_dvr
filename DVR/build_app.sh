@@ -62,7 +62,7 @@ fi
 if [ $? -eq 0 ]; then
     echo ""
     echo "✅ Aplicação criada com sucesso!"
-    echo "📁 Localização: dist/BBB DVR Viewer.app"
+    echo "📁 Localização: ../dist/BBB DVR Viewer.app"
     echo ""
     echo "Para testar, execute:"
     echo "  open 'dist/BBB DVR Viewer.app'"

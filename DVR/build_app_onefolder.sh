@@ -57,10 +57,10 @@ pyinstaller \
 # Copia Info.plist para o bundle se existir
 if [ -f "Info.plist" ]; then
     echo "📋 Copiando Info.plist para o bundle..."
-    cp Info.plist "dist/BBB DVR Viewer.app/Contents/Info.plist"
+    cp Info.plist "../dist/BBB DVR Viewer.app/Contents/Info.plist"
     
     # Atualiza referência do ícone no Info.plist
-    ICNS_FILE=$(find "dist/BBB DVR Viewer.app/Contents/Resources" -name "*.icns" | head -1)
+    ICNS_FILE=$(find "../dist/BBB DVR Viewer.app/Contents/Resources" -name "*.icns" | head -1)
     if [ -n "$ICNS_FILE" ]; then
         ICNS_NAME=$(basename "$ICNS_FILE" .icns)
         echo "📋 Atualizando referência do ícone para: $ICNS_NAME"
@@ -69,7 +69,7 @@ if [ -f "Info.plist" ]; then
 import plistlib
 import sys
 
-plist_path = "dist/BBB DVR Viewer.app/Contents/Info.plist"
+plist_path = "../dist/BBB DVR Viewer.app/Contents/Info.plist"
 icns_name = "$ICNS_NAME"
 
 try:
@@ -92,7 +92,7 @@ fi
 if [ $? -eq 0 ]; then
     echo ""
     echo "✅ Aplicação criada com sucesso!"
-    echo "📁 Localização: dist/BBB DVR Viewer.app"
+    echo "📁 Localização: ../dist/BBB DVR Viewer.app"
     echo ""
     echo "Para testar, execute:"
     echo "  open 'dist/BBB DVR Viewer.app'"
