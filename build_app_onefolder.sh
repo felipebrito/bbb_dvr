@@ -58,6 +58,17 @@ pyinstaller \
 if [ -f "Info.plist" ]; then
     echo "📋 Copiando Info.plist para o bundle..."
     cp Info.plist "dist/BBB DVR Viewer.app/Contents/Info.plist"
+    
+    # Atualiza referência do ícone no Info.plist
+    ICNS_FILE=$(find "dist/BBB DVR Viewer.app/Contents/Resources" -name "*.icns" | head -1)
+    if [ -n "$ICNS_FILE" ]; then
+        ICNS_NAME=$(basename "$ICNS_FILE" .icns)
+        echo "📋 Atualizando referência do ícone para: $ICNS_NAME"
+        # Usa sed para atualizar o CFBundleIconFile no Info.plist
+        sed -i '' "s/<key>CFBundleIconFile<\/key>.*/<key>CFBundleIconFile<\/key>\n    <string>$ICNS_NAME<\/string>/" "dist/BBB DVR Viewer.app/Contents/Info.plist" 2>/dev/null || \
+        sed -i '' "/<key>CFBundleIconFile<\/key>/!b;n;c\\
+    <string>$ICNS_NAME</string>" "dist/BBB DVR Viewer.app/Contents/Info.plist"
+    fi
 fi
 
 if [ $? -eq 0 ]; then

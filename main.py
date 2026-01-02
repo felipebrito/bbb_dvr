@@ -27,6 +27,14 @@ class CameraViewerApp:
     """Aplicação principal de visualização de câmeras."""
     
     def __init__(self):
+        # Log de ambiente para debug
+        if getattr(sys, 'frozen', False):
+            print(f"=== DEBUG: Executando como .app ===")
+            print(f"Executável: {sys.executable}")
+            print(f"Diretório de trabalho: {os.getcwd()}")
+            if hasattr(sys, '_MEIPASS'):
+                print(f"MEIPASS: {sys._MEIPASS}")
+        
         self.root = tk.Tk()
         self.config_manager = ConfigManager()
         
@@ -36,6 +44,8 @@ class CameraViewerApp:
         print(f"CameraViewerApp: {dvr_count} DVR(s), {total_cameras} câmera(s) configuradas")
         
         self.stream_manager = StreamManager(self.config_manager)
+        print(f"CameraViewerApp: {self.stream_manager.get_stream_count()} stream(s) criado(s)")
+        
         self.display_manager = DisplayManager(self.stream_manager)
         self.config_window = None
         
@@ -180,11 +190,40 @@ class CameraViewerApp:
     
     def _start_loading(self):
         """Inicia carregamento dos streams de forma assíncrona."""
+        # Marca início do loading
+        self.loading_start_time = time.time()
+        
         # Inicia streams
+        print("DEBUG: Iniciando todos os streams...")
         self.stream_manager.start_all()
+        print(f"DEBUG: {self.stream_manager.get_stream_count()} streams iniciados")
         
         # Inicia verificação de conexão
         self._check_connections()
+    
+    def _show_connection_error(self):
+        """Mostra erro de conexão."""
+        if self.loading_canvas:
+            canvas_width = self.root.winfo_screenwidth()
+            canvas_height = self.root.winfo_screenheight()
+            
+            self.loading_canvas.delete('loading_text')
+            self.loading_canvas.create_text(
+                canvas_width // 2,
+                canvas_height // 2 - 50,
+                text="Erro ao conectar às câmeras",
+                fill='red',
+                font=('Arial', 24, 'bold'),
+                tags='loading_text'
+            )
+            self.loading_canvas.create_text(
+                canvas_width // 2,
+                canvas_height // 2 + 20,
+                text="Verifique a rede e as configurações",
+                fill='white',
+                font=('Arial', 18),
+                tags='loading_text'
+            )
     
     def _check_connections(self):
         """Verifica conexões de forma assíncrona."""
@@ -200,13 +239,33 @@ class CameraViewerApp:
             progress
         )
         
+        # Log periódico para debug
+        if connected_count == 0 and total_streams > 0:
+            # Se nenhuma câmera conectou ainda, mostra mais detalhes
+            failed_streams = []
+            for i in range(total_streams):
+                if not self.stream_manager.streams[i].is_connected():
+                    failed_streams.append(i)
+            if len(failed_streams) > 0 and len(failed_streams) <= 4:
+                print(f"DEBUG: Streams não conectados: {failed_streams}")
+        
         # Verifica se todos estão conectados
         if connected_count == total_streams and total_streams > 0:
             # Todos conectados, finaliza loading
             self.root.after(500, self._finish_loading)  # Aguarda 0.5s para estabilizar
         else:
-            # Continua verificando
-            self.root.after(500, self._check_connections)
+            # Continua verificando (com timeout máximo de 60 segundos)
+            elapsed = time.time() - self.loading_start_time if hasattr(self, 'loading_start_time') else 0
+            if elapsed < 60:  # Timeout de 60 segundos
+                self.root.after(500, self._check_connections)
+            else:
+                print(f"DEBUG: Timeout - Apenas {connected_count}/{total_streams} câmeras conectadas após 60s")
+                # Continua mesmo assim se pelo menos algumas conectaram
+                if connected_count > 0:
+                    self.root.after(500, self._finish_loading)
+                else:
+                    # Nenhuma conectou, mostra erro
+                    self._show_connection_error()
     
     def _finish_loading(self):
         """Finaliza carregamento e inicia exibição."""

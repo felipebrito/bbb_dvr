@@ -116,9 +116,19 @@ class StreamCapture:
                 self.current_url = self.alt_url
                 print(f"Stream {self.stream_id}: Tentando URL alternativa")
             
+            # Log para debug (sem senha)
+            safe_url = url_to_try.split('@')[0] + '@[REDACTED]' if '@' in url_to_try else url_to_try
+            print(f"Stream {self.stream_id}: Tentando conectar a {safe_url} (tentativa {self.connection_attempts + 1})")
+            
             # Configurações para melhor performance e autenticação RTSP
             # Usa backend FFMPEG com opções RTSP
             self.cap = cv2.VideoCapture(url_to_try, cv2.CAP_FFMPEG)
+            
+            # Verifica se VideoCapture foi criado
+            if self.cap is None:
+                print(f"Stream {self.stream_id}: ERRO - VideoCapture retornou None")
+                self.connected = False
+                return
             
             # Configurações de buffer e FPS
             self.cap.set(cv2.CAP_PROP_BUFFERSIZE, 1)  # Buffer mínimo
@@ -157,7 +167,9 @@ class StreamCapture:
                     
         except Exception as e:
             self.connection_attempts += 1
-            print(f"Erro ao conectar stream {self.stream_id}: {e}")
+            print(f"Stream {self.stream_id}: ERRO ao conectar - {type(e).__name__}: {e}")
+            import traceback
+            traceback.print_exc()
             self.connected = False
             if self.cap:
                 self.cap.release()
