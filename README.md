@@ -190,8 +190,7 @@ Se você está recebendo erro **401 Unauthorized**, isso significa problema de a
 
 1. **Teste no VLC primeiro**: Abra VLC > Media > Open Network Stream e cole a URL RTSP
 2. **Verifique credenciais**: Confirme usuário e senha no `config.json`
-3. **Teste com script**: Execute `python test_rtsp_detailed.py` para diagnóstico
-4. **Consulte TROUBLESHOOTING.md**: Veja guia completo de solução de problemas
+3. **Consulte TROUBLESHOOTING.md**: Veja guia completo de solução de problemas
 
 ### Streams não conectam
 
@@ -199,7 +198,6 @@ Se você está recebendo erro **401 Unauthorized**, isso significa problema de a
 - Confirme credenciais RTSP
 - Teste a URL RTSP manualmente com VLC ou similar
 - Verifique firewall/rede
-- Execute `python test_rtsp_detailed.py` para diagnóstico detalhado
 
 ### Performance baixa
 
@@ -219,8 +217,6 @@ Se você está recebendo erro **401 Unauthorized**, isso significa problema de a
 
 - `run.sh`: Executa a aplicação
 - `install.sh`: Instala dependências
-- `test_rtsp_detailed.py`: Testa conexão RTSP com diagnóstico detalhado
-- `test_from_config.py`: Testa usando configuração do config.json
 
 ## 🤝 Contribuindo
 
