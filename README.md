@@ -226,6 +226,18 @@ Contribuições são bem-vindas! Sinta-se à vontade para abrir issues ou pull r
 
 Este projeto é de código aberto e está disponível sob a licença MIT.
 
+## 📦 Criar Aplicação .app para macOS
+
+Para criar um arquivo `.app` para distribuição:
+
+```bash
+./build_app.sh
+```
+
+A aplicação será criada em `dist/BBB DVR Viewer.app`.
+
+Para mais detalhes, consulte [README_BUILD.md](README_BUILD.md).
+
 ## 👤 Autor
 
 Felipe Brito

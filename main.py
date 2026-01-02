@@ -4,11 +4,23 @@ from tkinter import messagebox
 import cv2
 import numpy as np
 import time
+import sys
+import os
 from PIL import Image, ImageTk
 from config_manager import ConfigManager
 from stream_manager import StreamManager
 from display_manager import DisplayManager
 from config_window import ConfigWindow
+
+# Ajusta path para funcionar quando empacotado como .app
+if getattr(sys, 'frozen', False):
+    # Se está rodando como executável empacotado
+    application_path = sys._MEIPASS
+    os.chdir(os.path.dirname(sys.executable))
+else:
+    # Se está rodando como script Python
+    application_path = os.path.dirname(os.path.abspath(__file__))
+    os.chdir(application_path)
 
 
 class CameraViewerApp:

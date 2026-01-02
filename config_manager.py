@@ -1,6 +1,7 @@
 """Gerenciamento de configuração da aplicação."""
 import json
 import os
+import sys
 from typing import Dict, List, Any
 
 
@@ -8,6 +9,14 @@ class ConfigManager:
     """Gerencia carregamento e salvamento de configuração."""
     
     def __init__(self, config_path: str = "config.json"):
+        # Se config.json não estiver no diretório atual, tenta no diretório do executável
+        if not os.path.exists(config_path):
+            # Tenta no diretório do executável (quando empacotado)
+            exec_dir = os.path.dirname(sys.executable) if hasattr(sys, 'frozen') else os.path.dirname(os.path.abspath(__file__))
+            alt_path = os.path.join(exec_dir, config_path)
+            if os.path.exists(alt_path):
+                config_path = alt_path
+        
         self.config_path = config_path
         self.config: Dict[str, Any] = {}
         self.load()
