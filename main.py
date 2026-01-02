@@ -29,6 +29,12 @@ class CameraViewerApp:
     def __init__(self):
         self.root = tk.Tk()
         self.config_manager = ConfigManager()
+        
+        # Debug: verifica configuração carregada
+        dvr_count = len(self.config_manager.get_dvr_servers())
+        total_cameras = sum(len(s.get("channels", [])) for s in self.config_manager.get_dvr_servers())
+        print(f"CameraViewerApp: {dvr_count} DVR(s), {total_cameras} câmera(s) configuradas")
+        
         self.stream_manager = StreamManager(self.config_manager)
         self.display_manager = DisplayManager(self.stream_manager)
         self.config_window = None

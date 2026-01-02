@@ -171,6 +171,9 @@ class StreamManager:
         self.config_manager = config_manager
         self.streams: Dict[int, StreamCapture] = {}
         self._build_streams()
+        
+        # Debug: mostra quantos streams foram criados
+        print(f"StreamManager: {len(self.streams)} stream(s) criado(s)")
     
     def _build_streams(self) -> None:
         """Constrói streams a partir da configuração."""

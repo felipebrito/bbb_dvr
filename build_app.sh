@@ -38,6 +38,7 @@ pyinstaller \
     --noconsole \
     $ICON_OPTION \
     --add-data "config.json:." \
+    --add-data "imagens:imagens" \
     --hidden-import=PIL._tkinter_finder \
     --hidden-import=tkinter \
     --hidden-import=cv2 \
