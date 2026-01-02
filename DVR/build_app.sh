@@ -5,8 +5,15 @@ cd "$(dirname "$0")"
 
 echo "🔨 Construindo aplicação .app..."
 
-# Ativa ambiente virtual
-source .venv/bin/activate
+# Ativa ambiente virtual (pode estar no diretório pai)
+if [ -f "../.venv/bin/activate" ]; then
+    source ../.venv/bin/activate
+elif [ -f ".venv/bin/activate" ]; then
+    source .venv/bin/activate
+else
+    echo "⚠️  Ambiente virtual não encontrado. Execute install.sh primeiro."
+    exit 1
+fi
 
 # Instala PyInstaller se não estiver instalado
 if ! python -c "import PyInstaller" 2>/dev/null; then
@@ -27,7 +34,7 @@ fi
 
 # Limpa builds anteriores
 echo "🧹 Limpando builds anteriores..."
-rm -rf build dist *.spec
+rm -rf ../build ../dist *.spec
 
 # Verifica se Info.plist existe
 INFO_PLIST_OPTION=""
@@ -43,6 +50,8 @@ pyinstaller \
     --windowed \
     --onefile \
     --noconsole \
+    --distpath ../dist \
+    --workpath ../build \
     $ICON_OPTION \
     $INFO_PLIST_OPTION \
     --add-data "config.json:." \
