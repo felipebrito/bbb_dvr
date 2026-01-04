@@ -1,0 +1,172 @@
+================================================================================
+                    DIAGRAMA DE CONEXÕES - ARDUINO MEGA
+              Controlador LED IR + Fechadura Magnética + Sirene
+================================================================================
+
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                              ARDUINO MEGA                                   │
+│                                                                             │
+│  ┌─────────┐                                                               │
+│  │ Pino 13 │───[220Ω]───[LED IR]─── GND                                   │
+│  │(IR TX)  │     │                                                         │
+│  └─────────┘     │                                                         │
+│                  │ Emissor IR (aponta para fita LED)                      │
+│                                                                             │
+│  ┌─────────┐                                                               │
+│  │  Pino 3 │───[Chave Liberar Porta]─── GND                               │
+│  │(Switch1)│     │                                                         │
+│  └─────────┘     │ (Pull-up interno ativado)                              │
+│                  │                                                         │
+│  ┌─────────┐                                                               │
+│  │  Pino 4 │───[Chave Ativar Sirene]─── GND                               │
+│  │(Switch2)│     │                                                         │
+│  └─────────┘     │ (Pull-up interno ativado)                              │
+│                  │                                                         │
+│  ┌─────────┐                                                               │
+│  │  Pino 8 │───[Módulo Relé 1]─── Fechadura Magnética                     │
+│  │(Relé 1) │     │                                                         │
+│  └─────────┘     │ HIGH = Porta FECHADA                                   │
+│                  │ LOW  = Porta ABERTA (apenas cor verde)                 │
+│                                                                             │
+│  ┌─────────┐                                                               │
+│  │ Pino 10 │───[Módulo Relé 2]─── Sirene                                  │
+│  │(Relé 2) │     │                                                         │
+│  └─────────┘     │ Ativado pela chave micro                               │
+│                  │                                                         │
+│  ┌─────────┐                                                               │
+│  │   5V    │───[Alimentação dos módulos de relé]                         │
+│  └─────────┘                                                               │
+│                                                                             │
+│  ┌─────────┐                                                               │
+│  │   GND   │───[Terra comum]                                               │
+│  └─────────┘                                                               │
+│                                                                             │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+================================================================================
+                          CONEXÕES DETALHADAS
+================================================================================
+
+1. EMISSOR IR (Pino 13)
+   ┌─────────┐
+   │ Pino 13 │───[Resistor 220Ω]───[LED IR Ânodo]
+   └─────────┘
+   
+   [LED IR Cátodo]─── GND
+   
+   Nota: O LED IR deve estar apontado para o receptor da fita LED
+
+
+2. CHAVE LIBERAR PORTA (Pino 3)
+   ┌─────────┐
+   │ Pino 3  │───[Terminal 1 da Chave]
+   └─────────┘
+   
+   [Terminal 2 da Chave]─── GND
+   
+   Nota: Usa pull-up interno do Arduino (INPUT_PULLUP)
+         Quando pressionada: Pino 3 vai para LOW
+         Função: Libera porta (abre fechadura)
+
+3. CHAVE ATIVAR SIRENE (Pino 4)
+   ┌─────────┐
+   │ Pino 4  │───[Terminal 1 da Chave]
+   └─────────┘
+   
+   [Terminal 2 da Chave]─── GND
+   
+   Nota: Usa pull-up interno do Arduino (INPUT_PULLUP)
+         Quando pressionada: Pino 4 vai para LOW
+         Função: Ativa sirene (relé pino 10)
+
+
+4. MÓDULO RELÉ 1 - FECHADURA (Pino 8)
+   ┌─────────┐
+   │ Pino 8  │───[IN do Módulo Relé]
+   └─────────┘
+   
+   Módulo Relé:
+   ├── VCC ─── 5V
+   ├── GND ─── GND
+   ├── IN  ─── Pino 8
+   ├── NO  ─── [Fechadura Magnética +]
+   └── COM ─── [Fonte de alimentação da fechadura]
+   
+   Lógica:
+   - HIGH no Pino 8 = Relé ativado = Fechadura energizada = PORTA FECHADA
+   - LOW no Pino 8  = Relé desativado = Fechadura desenergizada = PORTA ABERTA
+   
+   Nota: Porta só abre quando cor é VERDE (G)
+
+
+5. MÓDULO RELÉ 2 - SIRENE (Pino 10)
+   ┌─────────┐
+   │ Pino 10 │───[IN do Módulo Relé]
+   └─────────┘
+   
+   Módulo Relé:
+   ├── VCC ─── 5V
+   ├── GND ─── GND
+   ├── IN  ─── Pino 10
+   ├── NO  ─── [Sirene +]
+   └── COM ─── [Fonte de alimentação da sirene]
+   
+   Lógica:
+   - HIGH no Pino 10 = Relé ativado = Sirene ligada
+   - LOW no Pino 10  = Relé desativado = Sirene desligada
+   
+   Nota: Ativado quando chave do pino 4 é pressionada
+         Duração configurável via Serial (padrão: 3000ms)
+
+
+================================================================================
+                          RESUMO DE PINOS
+================================================================================
+
+┌──────────┬─────────────────────────────────────────────────────────────┐
+│  Pino    │  Função                                                       │
+├──────────┼─────────────────────────────────────────────────────────────┤
+│   13     │  Emissor IR (LED IR + resistor 220Ω)                        │
+│    3     │  Chave Liberar Porta (INPUT_PULLUP)                          │
+│    4     │  Chave Ativar Sirene (INPUT_PULLUP)                           │
+│    8     │  Relé Fechadura Magnética                                    │
+│   10     │  Relé Sirene/Auxiliar                                        │
+│   5V     │  Alimentação dos módulos de relé                             │
+│   GND    │  Terra comum                                                 │
+└──────────┴─────────────────────────────────────────────────────────────┘
+
+
+================================================================================
+                          FLUXO DE FUNCIONAMENTO
+================================================================================
+
+1. Sistema inicia e seleciona cor aleatória (R, G, B ou W)
+2. Envia comando IR para fita LED mudar de cor
+3. Se cor = VERDE (G):
+   → Pino 8 = LOW → Fechadura desenergizada → PORTA ABERTA
+4. Se cor ≠ VERDE (R, B ou W):
+   → Pino 8 = HIGH → Fechadura energizada → PORTA FECHADA
+5. Após 15-30 segundos (aleatório), muda para próxima cor
+6. Quando chave do pino 3 é pressionada:
+   → Pino 8 = LOW → PORTA LIBERADA (independente da cor)
+   → Quando solta, volta ao estado baseado na cor
+7. Quando chave do pino 4 é pressionada:
+   → Pino 10 = HIGH → Sirene ativada
+   → Após tempo configurado (padrão 3s), Pino 10 = LOW → Sirene desativada
+
+
+================================================================================
+                          COMANDOS SERIAL (9600 baud)
+================================================================================
+
+sirene:XXXX
+  Define duração da sirene em milissegundos
+  Exemplo: sirene:5000  (sirene fica 5 segundos ativa)
+
+cores:MIN-MAX
+  Define duração mínima e máxima das cores em segundos
+  Exemplo: cores:15-30  (cada cor dura entre 15 e 30 segundos)
+
+
+================================================================================
+
